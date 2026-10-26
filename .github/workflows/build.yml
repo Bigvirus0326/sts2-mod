@@ -112,9 +112,11 @@ jobs:
           touch "$DIR/build/.gdignore"
           "$G" --headless --path "$DIR" --import > godot.log 2>&1 || true
           "$G" --headless --path "$DIR" --export-pack BasicExport "$out" >> godot.log 2>&1 || true
-          if [ ! -s "$out" ]; then
+          size=$(stat -c %s "$out" 2>/dev/null || echo 0)
+          echo "pck 크기: $size bytes"
+          if [ "$size" -lt 1024 ]; then
             # 로그를 주석(annotation)으로 남겨 권한 없이도 원인을 볼 수 있게 함
-            msg=$(grep -iE "error|fail|cannot|not found" godot.log | tail -15 | tr '\n' '|' | cut -c1-3000)
+            msg=$(grep -v "^$" godot.log | tail -25 | tr '\n' '|' | cut -c1-3000)
             echo "::error title=pck 생성 실패 ($MOD)::$msg"
             cat godot.log
             exit 1
