@@ -1,0 +1,11 @@
+{
+  "MAPLEMONSTERS-DAMAGE_CAP_POWER.description": "한 번에 일정량을 넘는 피해를 받지 않습니다.",
+  "MAPLEMONSTERS-DAMAGE_CAP_POWER.smartDescription": "한 번에 [blue]{Amount}[/blue]을(를) 넘는 피해를 받지 않습니다.",
+  "MAPLEMONSTERS-DAMAGE_CAP_POWER.title": "데미지 상한",
+  "MAPLEMONSTERS-TIME_LIMIT_POWER.description": "제한 시간이 끝나면 매 턴 시작 시 힘을 얻습니다.",
+  "MAPLEMONSTERS-TIME_LIMIT_POWER.smartDescription": "남은 시간 [blue]{Amount}[/blue]. [blue]1[/blue]이 되면 매 턴 시작 시 [gold]힘[/gold] [blue]3[/blue]을 얻습니다.",
+  "MAPLEMONSTERS-TIME_LIMIT_POWER.title": "제한 시간",
+  "MAPLEMONSTERS-UNDEAD_POWER.description": "처음 쓰러질 때 최대 체력의 40%로 되살아나며 더 강해집니다.",
+  "MAPLEMONSTERS-UNDEAD_POWER.smartDescription": "처음 쓰러질 때 최대 체력의 [blue]40%[/blue]로 되살아나며 더 강해집니다.",
+  "MAPLEMONSTERS-UNDEAD_POWER.title": "언데드"
+}

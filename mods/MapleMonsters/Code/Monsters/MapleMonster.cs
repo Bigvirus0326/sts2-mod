@@ -3,7 +3,9 @@ using BaseLib.Abstracts;
 using BaseLib.Utils.NodeFactories;
 using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
@@ -59,9 +61,60 @@ public abstract partial class MapleMonster : CustomMonsterModel
     /// <summary>주어진 행동들을 순서대로 반복하는 패턴 (A → B → C → A …).</summary>
     protected static MonsterMoveStateMachine Cycle(params MoveState[] moves)
     {
+        Link(moves);
+        return new MonsterMoveStateMachine(moves, moves[0]);
+    }
+
+    private static void Link(MoveState[] moves)
+    {
         for (var i = 0; i < moves.Length; i++)
             moves[i].FollowUpState = moves[(i + 1) % moves.Length];
-        return new MonsterMoveStateMachine(moves, moves[0]);
+    }
+
+    // ───── 2페이즈 ─────
+
+    private MoveState? _phase2Start;
+    public bool InPhase2 { get; private set; }
+
+    /// <summary>
+    /// 1페이즈 패턴을 반복하다가, 2페이즈가 되면 2페이즈 패턴을 반복.
+    /// 기본은 체력이 MapleDifficulty.Phase2HpPercent 이하가 될 때 전환 (TriggersPhase2AtHp로 끌 수 있음).
+    /// </summary>
+    protected MonsterMoveStateMachine Phases(MoveState[] phase1, MoveState[] phase2)
+    {
+        Link(phase1);
+        Link(phase2);
+        _phase2Start = phase2[0];
+        return new MonsterMoveStateMachine([.. phase1, .. phase2], phase1[0]);
+    }
+
+    /// <summary>false면 체력으로는 2페이즈가 되지 않음 (예: 부활할 때 전환하는 좀비).</summary>
+    protected virtual bool TriggersPhase2AtHp => true;
+
+    /// <summary>2페이즈 진입 연출/효과. 기본: 자신의 디버프를 모두 지움.</summary>
+    protected virtual async Task OnPhase2Start()
+    {
+        foreach (var p in Creature.Powers.Where(p => p.Type == PowerType.Debuff).ToList())
+            await PowerCmd.Remove(p);
+    }
+
+    public async Task EnterPhase2()
+    {
+        if (InPhase2 || _phase2Start == null || Creature.CurrentHp <= 0)
+            return;
+        InPhase2 = true;
+        await OnPhase2Start();
+        SetMoveImmediate(_phase2Start, forceTransition: true);
+    }
+
+    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result,
+        ValueProp props, Creature? dealer, CardModel? cardSource)
+    {
+        await base.AfterDamageReceived(choiceContext, target, result, props, dealer, cardSource);
+        if (target != Creature || InPhase2 || !TriggersPhase2AtHp || Creature.CurrentHp <= 0)
+            return;
+        if (Creature.CurrentHp * 100 <= Creature.MaxHp * MapleDifficulty.Phase2HpPercent)
+            await EnterPhase2();
     }
 
     private static string ToSnake(string name) =>

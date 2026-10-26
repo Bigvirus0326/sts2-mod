@@ -1,0 +1,11 @@
+{
+  "MAPLEMONSTERS-DAMAGE_CAP_POWER.description": "Cannot take more than a set amount of damage from a single hit.",
+  "MAPLEMONSTERS-DAMAGE_CAP_POWER.smartDescription": "Cannot take more than [blue]{Amount}[/blue] damage from a single hit.",
+  "MAPLEMONSTERS-DAMAGE_CAP_POWER.title": "Damage Cap",
+  "MAPLEMONSTERS-TIME_LIMIT_POWER.description": "When time runs out, gains Strength at the start of every turn.",
+  "MAPLEMONSTERS-TIME_LIMIT_POWER.smartDescription": "Time left: [blue]{Amount}[/blue]. At [blue]1[/blue], gains [blue]3[/blue] [gold]Strength[/gold] at the start of every turn.",
+  "MAPLEMONSTERS-TIME_LIMIT_POWER.title": "Time Limit",
+  "MAPLEMONSTERS-UNDEAD_POWER.description": "The first time this enemy would die, it revives with 40% of its Max HP and grows stronger.",
+  "MAPLEMONSTERS-UNDEAD_POWER.smartDescription": "The first time this enemy would die, it revives with [blue]40%[/blue] of its Max HP and grows stronger.",
+  "MAPLEMONSTERS-UNDEAD_POWER.title": "Undead"
+}
