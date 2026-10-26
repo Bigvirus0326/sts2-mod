@@ -1,0 +1,75 @@
+name: Game API dump
+
+# 게임 참조 스텁(sts2.dll, 시그니처만 있음)과 BaseLib을 디컴파일해서
+# Releases의 'dev-api' 에 올립니다. 게임 PC·NuGet 접근이 없는 곳(폰의 Claude 등)에서도
+# 클래스/메서드 이름을 확인하기 위한 개발용 자료입니다. 게임 로직은 들어 있지 않습니다.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - Directory.Build.props
+      - .github/workflows/api-dump.yml
+
+permissions:
+  contents: write
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: 패키지 받기
+        run: |
+          set -e
+          mkdir -p apidump && cd apidump
+          cat > Dump.csproj <<'EOF'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <Import Project="../Directory.Build.props" />
+            <PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup>
+            <ItemGroup>
+              <PackageReference Include="BSchneppe.Sts2.ReferenceAssemblies" Version="$(Sts2RefVersion)" />
+              <PackageReference Include="Alchyr.Sts2.BaseLib" Version="$(BaseLibVersion)" />
+            </ItemGroup>
+          </Project>
+          EOF
+          dotnet restore Dump.csproj
+          find ~/.nuget/packages/bschneppe.sts2.referenceassemblies ~/.nuget/packages/alchyr.sts2.baselib -name '*.dll' | tee dlls.txt
+
+      - name: 디컴파일
+        run: |
+          set -e
+          dotnet tool install -g ilspycmd
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          cd apidump
+          sts2=$(grep -i '/sts2.dll$' dlls.txt | head -1)
+          baselib=$(grep -i '/BaseLib.dll$' dlls.txt | head -1)
+          refver=$(basename "$(dirname "$(dirname "$(dirname "$sts2")")")")
+          blver=$(basename "$(dirname "$(dirname "$(dirname "$baselib")")")")
+          echo "sts2 stub $refver, BaseLib $blver"
+          ilspycmd -p -o out/sts2 "$sts2" > /dev/null
+          ilspycmd -p -o out/BaseLib "$baselib" > /dev/null
+          rm -f out/*/*.csproj
+          # 빠른 검색용 목록: 모든 public 타입과 멤버 선언 한 줄씩
+          grep -rhE '^\s*(public|protected)[^=]*\b(class|interface|enum|struct|record|abstract|virtual|override|static|async)?\b' out/sts2 \
+            | sed 's/^\s*//' | grep -vE '^\s*$' > out/sts2_declarations.txt || true
+          printf 'sts2 reference stub: %s\nBaseLib: %s\nGenerated: %s\n' "$refver" "$blver" "$(date -u)" > out/VERSIONS.txt
+          (cd out && zip -qr ../sts2-api.zip .)
+          ls -la sts2-api.zip
+
+      - name: Releases 'dev-api' 갱신
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete dev-api --yes --cleanup-tag 2>/dev/null || true
+          gh release create dev-api apidump/sts2-api.zip --prerelease --latest=false \
+            --title "개발용: 게임 API 목록" \
+            --notes "AI/개발자용 참고 자료. sts2 참조 스텁(시그니처만)과 BaseLib 디컴파일 결과. 게임에 설치하는 파일이 아닙니다." \
+            --target "$GITHUB_SHA"
