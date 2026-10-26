@@ -108,10 +108,12 @@ jobs:
         run: |
           set -e
           G="${{ steps.godot.outputs.bin }}"
+          out="$GITHUB_WORKSPACE/$DIR/build/$MOD.pck"
           touch "$DIR/build/.gdignore"
           "$G" --headless --path "$DIR" --import || true
-          "$G" --headless --path "$DIR" --export-pack BasicExport "build/$MOD.pck"
-          test -s "$DIR/build/$MOD.pck"
+          "$G" --headless --path "$DIR" --export-pack BasicExport "$out"
+          ls -la "$DIR/build"
+          test -s "$out"
 
       - name: 설치용 zip 만들기
         run: |
