@@ -27,6 +27,10 @@ Claude 앱에서 새 대화를 열고 이 저장소(`Bigvirus0326/sts2-mod`)를 
 
 Claude는 `CLAUDE.md`/`AGENTS.md` 규칙대로 코드를 쓰고, 푸시하고, 빌드 성공까지 확인합니다.
 
+### 새 채팅에서 이어하기
+새 대화에서 **"슬더스 모드 이어서 하자"** 라고만 하면 됩니다. Claude가 이 저장소를 연결하고
+[PROGRESS.md](PROGRESS.md)(작업 일지)를 읽어 지난번 상태에서 바로 이어갑니다. GPT도 같은 파일을 읽고 갱신합니다.
+
 ## 2. GPT로 그림 넣기
 편한 방법 하나:
 - **ChatGPT(Codex)에 이 저장소 연결** → "AGENTS.md 규칙대로 SpireMod의 `fire_slash` 카드 그림을 만들어 넣어줘"
