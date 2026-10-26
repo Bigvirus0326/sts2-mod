@@ -110,10 +110,15 @@ jobs:
           G="${{ steps.godot.outputs.bin }}"
           out="$GITHUB_WORKSPACE/$DIR/build/$MOD.pck"
           touch "$DIR/build/.gdignore"
-          "$G" --headless --path "$DIR" --import || true
-          "$G" --headless --path "$DIR" --export-pack BasicExport "$out"
-          ls -la "$DIR/build"
-          test -s "$out"
+          "$G" --headless --path "$DIR" --import > godot.log 2>&1 || true
+          "$G" --headless --path "$DIR" --export-pack BasicExport "$out" >> godot.log 2>&1 || true
+          if [ ! -s "$out" ]; then
+            # 로그를 주석(annotation)으로 남겨 권한 없이도 원인을 볼 수 있게 함
+            msg=$(grep -iE "error|fail|cannot|not found" godot.log | tail -15 | tr '\n' '|' | cut -c1-3000)
+            echo "::error title=pck 생성 실패 ($MOD)::$msg"
+            cat godot.log
+            exit 1
+          fi
 
       - name: 설치용 zip 만들기
         run: |
