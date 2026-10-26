@@ -1,0 +1,75 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+    <!--
+      슬레이 더 스파이어 2 모드 프로젝트.
+      게임이 설치되지 않은 곳(GitHub Actions, 클라우드, 폰에서 작업하는 Claude 등)에서도
+      빌드되도록, 게임 DLL 대신 NuGet의 "참조 전용 스텁"을 기본으로 씁니다.
+      PC에 게임이 깔려 있으면 자동으로 실제 게임 DLL을 대신 사용합니다.
+    -->
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>true</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <AppOutputBase>$(MSBuildProjectDirectory)/</AppOutputBase>
+        <PathMap>$(AppOutputBase)=./</PathMap>
+        <GodotDisabledSourceGenerators>GodotPluginsInitializer</GodotDisabledSourceGenerators>
+        <!-- 모드는 모든 플랫폼용(MSIL)으로 빌드하므로 아키텍처 경고는 끔 -->
+        <NoWarn>$(NoWarn);MSB3270</NoWarn>
+    </PropertyGroup>
+
+    <!-- 로컬 게임 경로 자동 탐색 (없으면 비워 둠 → 스텁 사용) -->
+    <PropertyGroup Condition="'$(Sts2DataDir)' == ''">
+        <_SteamCommon Condition="$([MSBuild]::IsOSPlatform('Windows'))">C:/Program Files (x86)/Steam/steamapps/common</_SteamCommon>
+        <_SteamCommon Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(HOME)/.local/share/Steam/steamapps/common</_SteamCommon>
+        <_SteamCommon Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(HOME)/Library/Application Support/Steam/steamapps/common</_SteamCommon>
+        <Sts2DataDir Condition="Exists('$(_SteamCommon)/Slay the Spire 2/data_sts2_windows_x86_64/sts2.dll')">$(_SteamCommon)/Slay the Spire 2/data_sts2_windows_x86_64</Sts2DataDir>
+        <Sts2DataDir Condition="Exists('$(_SteamCommon)/Slay the Spire 2/data_sts2_linuxbsd_x86_64/sts2.dll')">$(_SteamCommon)/Slay the Spire 2/data_sts2_linuxbsd_x86_64</Sts2DataDir>
+    </PropertyGroup>
+    <PropertyGroup>
+        <UseGameDlls>false</UseGameDlls>
+        <UseGameDlls Condition="'$(Sts2DataDir)' != '' and Exists('$(Sts2DataDir)/sts2.dll')">true</UseGameDlls>
+    </PropertyGroup>
+
+    <!-- 실제 게임 DLL (PC에 게임이 있을 때) -->
+    <ItemGroup Condition="'$(UseGameDlls)' == 'true'">
+        <Reference Include="sts2" HintPath="$(Sts2DataDir)/sts2.dll" Private="false" />
+        <Reference Include="0Harmony" HintPath="$(Sts2DataDir)/0Harmony.dll" Private="false" />
+    </ItemGroup>
+
+    <!-- 참조 스텁 (게임이 없을 때: CI, 클라우드) — 게임 코드는 들어 있지 않고 시그니처만 있음 -->
+    <ItemGroup Condition="'$(UseGameDlls)' != 'true'">
+        <PackageReference Include="BSchneppe.Sts2.ReferenceAssemblies" Version="$(Sts2RefVersion)" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- 커뮤니티 공용 라이브러리. 게임에선 BaseLib 모드가 따로 설치되어 있어야 함 -->
+        <PackageReference Include="Alchyr.Sts2.BaseLib" Version="$(BaseLibVersion)" PrivateAssets="All" />
+    </ItemGroup>
+
+    <!-- Godot.NET.Sdk가 GodotSharp를 이미 넣어 주므로, 스텁 패키지의 GodotSharp는 빼서 중복을 막음 -->
+    <Target Name="DropStubGodotSharp" AfterTargets="ResolvePackageAssets" Condition="'$(UseGameDlls)' != 'true'">
+        <ItemGroup>
+            <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
+                Condition="'%(ResolvedCompileFileDefinitions.NuGetPackageId)' == 'BSchneppe.Sts2.ReferenceAssemblies' and '%(ResolvedCompileFileDefinitions.Filename)' == 'GodotSharp'" />
+            <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)"
+                Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'BSchneppe.Sts2.ReferenceAssemblies'" />
+        </ItemGroup>
+    </Target>
+
+    <!-- 에셋/도구 폴더는 C# 컴파일 대상에서 제외 -->
+    <ItemGroup>
+        <Compile Remove="MapleMonsters/**;art/**;build/**;dist/**" />
+        <EmbeddedResource Remove="MapleMonsters/**;art/**;build/**;dist/**" />
+        <None Include="MapleMonsters.json" />
+    </ItemGroup>
+
+    <!-- PC에 게임이 있으면 빌드 후 mods 폴더로 자동 복사 (CI에서는 건너뜀) -->
+    <Target Name="CopyToModsFolder" AfterTargets="PostBuildEvent" Condition="'$(UseGameDlls)' == 'true' and '$(CI)' != 'true'">
+        <PropertyGroup>
+            <_ModsDir>$([System.IO.Path]::GetFullPath('$(Sts2DataDir)/../mods/$(MSBuildProjectName)/'))</_ModsDir>
+        </PropertyGroup>
+        <Copy SourceFiles="$(TargetPath);$(MSBuildProjectName).json" DestinationFolder="$(_ModsDir)" />
+        <Message Text="모드를 $(_ModsDir) 에 복사했습니다." Importance="high" />
+    </Target>
+</Project>

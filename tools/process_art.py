@@ -12,6 +12,8 @@
   art/powers/<id>.png      -> SpireMod/images/powers/big/<id>.png         (256x256)
                               SpireMod/images/powers/<id>.png             (64x64)
   art/potions/<id>.png     -> SpireMod/images/potions/<id>.png            (원본 비율 유지, 최대 256)
+  art/monsters/<id>.png    -> SpireMod/images/monsters/<id>.png           (투명 여백 정리, 화면 높이 px로 맞춤)
+                              높이 기본 300px. art/monsters/sizes.json 에 {"<id>": 450} 처럼 지정 가능
   art/other/**             -> SpireMod/images/other/** (그대로 복사)
 
 원본은 어떤 크기·비율이든 됩니다. 카드 그림은 가운데 기준으로 잘라 맞추고,
@@ -23,6 +25,7 @@
 """
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import sys
@@ -98,7 +101,7 @@ def main(mod_dir: Path, check_only: bool) -> int:
     made = 0
 
     # 이름 충돌 검사
-    for sub in ("cards", "relics", "powers", "potions"):
+    for sub in ("cards", "relics", "powers", "potions", "monsters"):
         seen: dict[str, Path] = {}
         for p in sources(ART / sub):
             key = slug(p.stem)
@@ -145,6 +148,23 @@ def main(mod_dir: Path, check_only: bool) -> int:
         if bbox:
             im = im.crop(bbox)
         save(ImageOps.contain(im, (256, 256), Image.LANCZOS), IMG / "potions" / f"{n}.png")
+        made += 1
+
+    sizes_file = ART / "monsters" / "sizes.json"
+    sizes: dict[str, int] = {}
+    if sizes_file.exists():
+        try:
+            sizes = {slug(k): int(v) for k, v in json.loads(sizes_file.read_text(encoding="utf-8")).items()}
+        except (ValueError, TypeError) as e:
+            problems.append(f"art/monsters/sizes.json 형식 오류: {e}")
+    for p in sources(ART / "monsters"):
+        im, n = load(p), slug(p.stem)
+        bbox = im.getchannel("A").getbbox()
+        if bbox:
+            im = im.crop(bbox)
+        h = max(64, min(1000, sizes.get(n, 300)))
+        w = max(1, round(im.width * h / im.height))
+        save(im.resize((w, h), Image.LANCZOS), IMG / "monsters" / f"{n}.png")
         made += 1
 
     other = ART / "other"

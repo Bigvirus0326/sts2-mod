@@ -1,0 +1,8 @@
+{
+  "MAPLEMONSTERS-MUSHMOM_BOSS.title": "머쉬맘",
+  "MAPLEMONSTERS-MUSHMOM_BOSS.loss": "{character}은(는) [gold]{encounter}[/gold]에게 깔려 납작해졌다.",
+  "MAPLEMONSTERS-ZOMBIE_MUSHMOM_BOSS.title": "좀비머쉬맘",
+  "MAPLEMONSTERS-ZOMBIE_MUSHMOM_BOSS.loss": "{character}은(는) [gold]{encounter}[/gold]의 저주 속에 썩어 사라졌다.",
+  "MAPLEMONSTERS-BALROG_BOSS.title": "발록",
+  "MAPLEMONSTERS-BALROG_BOSS.loss": "{character}은(는) [gold]{encounter}[/gold]의 화염에 삼켜졌다."
+}

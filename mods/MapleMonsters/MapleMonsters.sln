@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{1CA00A92-F99E-4EF1-B3CA-3FED3A2CF2B2}") = "MapleMonsters", "MapleMonsters.csproj", "{44917220-2CD1-4EC6-9E61-2826075678BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		ExportDebug|Any CPU = ExportDebug|Any CPU
+		ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{44917220-2CD1-4EC6-9E61-2826075678BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44917220-2CD1-4EC6-9E61-2826075678BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44917220-2CD1-4EC6-9E61-2826075678BA}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{44917220-2CD1-4EC6-9E61-2826075678BA}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{44917220-2CD1-4EC6-9E61-2826075678BA}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{44917220-2CD1-4EC6-9E61-2826075678BA}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+EndGlobal

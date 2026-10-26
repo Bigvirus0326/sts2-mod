@@ -1,0 +1,8 @@
+{
+  "MAPLEMONSTERS-MUSHMOM_BOSS.title": "Mushmom",
+  "MAPLEMONSTERS-MUSHMOM_BOSS.loss": "{character} was flattened by [gold]{encounter}[/gold].",
+  "MAPLEMONSTERS-ZOMBIE_MUSHMOM_BOSS.title": "Zombie Mushmom",
+  "MAPLEMONSTERS-ZOMBIE_MUSHMOM_BOSS.loss": "{character} rotted away beneath [gold]{encounter}[/gold].",
+  "MAPLEMONSTERS-BALROG_BOSS.title": "Balrog",
+  "MAPLEMONSTERS-BALROG_BOSS.loss": "{character} was consumed by the flames of [gold]{encounter}[/gold]."
+}
