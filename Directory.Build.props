@@ -7,6 +7,7 @@
         <BaseLibVersion>3.*</BaseLibVersion>
     </PropertyGroup>
 
-    <!-- PC에서 게임이 기본 경로가 아닌 곳에 있으면, 아래 파일을 만들어 Sts2DataDir를 지정하세요 (깃에는 안 올라감) -->
-    <Import Project="local.props" Condition="Exists('local.props')" />
+    <!-- 이 파일은 mods/ 아래 모든 모드에 공통 적용됩니다.
+         PC에서 게임이 기본 경로가 아닌 곳에 있으면, 아래 파일을 만들어 Sts2DataDir를 지정하세요 (깃에는 안 올라감) -->
+    <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')" />
 </Project>

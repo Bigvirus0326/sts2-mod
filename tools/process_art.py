@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-art/ 의 원본 그림(GPT 등이 만든 것)을 게임이 쓰는 크기·위치로 변환합니다.
+모드 폴더의 art/ 원본 그림(GPT 등이 만든 것)을 게임이 쓰는 크기·위치로 변환합니다.
+(아래 경로는 mods/<모드이름>/ 기준, SpireMod 자리에 모드 이름이 들어감)
 
   art/mod_image.png        -> SpireMod/mod_image.png                      (420x420)
   art/cards/<id>.png       -> SpireMod/images/card_portraits/big/<id>.png (1000x760)
@@ -17,8 +18,8 @@ art/ 의 원본 그림(GPT 등이 만든 것)을 게임이 쓰는 크기·위치
 유물/파워/포션은 투명 여백을 정리한 뒤 정사각형 안에 맞춥니다.
 파일 이름은 소문자 영어·숫자·밑줄(snake_case)로 정규화됩니다.
 
-사용:  python3 tools/process_art.py          (변환)
-       python3 tools/process_art.py --check  (규칙 위반만 검사, CI용)
+사용:  python3 tools/process_art.py mods/SpireMod          (변환)
+       python3 tools/process_art.py mods/SpireMod --check  (규칙 위반만 검사, CI용)
 """
 from __future__ import annotations
 
@@ -32,10 +33,7 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("Pillow가 필요합니다:  pip install pillow")
 
-ROOT = Path(__file__).resolve().parent.parent
-ART = ROOT / "art"
-MOD = ROOT / "SpireMod"
-IMG = MOD / "images"
+ROOT = ART = MOD = IMG = Path()  # main()에서 설정
 EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 
 
@@ -88,7 +86,14 @@ def sources(folder: Path):
     return sorted(p for p in folder.iterdir() if p.suffix.lower() in EXTS and not p.name.startswith("."))
 
 
-def main(check_only: bool) -> int:
+def main(mod_dir: Path, check_only: bool) -> int:
+    global ROOT, ART, MOD, IMG
+    ROOT = mod_dir.resolve()
+    ART = ROOT / "art"
+    MOD = ROOT / ROOT.name
+    IMG = MOD / "images"
+    if not (ROOT / f"{ROOT.name}.csproj").exists():
+        sys.exit(f"{ROOT} 는 모드 폴더가 아닙니다 ({ROOT.name}.csproj 없음)")
     problems: list[str] = []
     made = 0
 
@@ -98,7 +103,7 @@ def main(check_only: bool) -> int:
         for p in sources(ART / sub):
             key = slug(p.stem)
             if key in seen:
-                problems.append(f"art/{sub}: '{p.name}' 와 '{seen[key].name}' 가 같은 이름({key})이 됩니다.")
+                problems.append(f"{ROOT.name}/art/{sub}: '{p.name}' 와 '{seen[key].name}' 가 같은 이름({key})이 됩니다.")
             seen[key] = p
 
     if check_only:
@@ -153,9 +158,12 @@ def main(check_only: bool) -> int:
 
     for msg in problems:
         print("경고:", msg)
-    print(f"그림 {made}개 변환 완료 -> {IMG.relative_to(ROOT)}")
+    print(f"[{ROOT.name}] 그림 {made}개 변환 완료")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main("--check" in sys.argv))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if len(args) != 1:
+        sys.exit("사용법: python3 tools/process_art.py mods/<모드이름> [--check]")
+    sys.exit(main(Path(args[0]), "--check" in sys.argv))

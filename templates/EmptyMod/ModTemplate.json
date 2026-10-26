@@ -1,8 +1,8 @@
 {
-  "id": "SpireMod",
-  "name": "SpireMod",
+  "id": "ModTemplate",
+  "name": "ModTemplate",
   "author": "Bigvirus0326",
-  "description": "My Slay the Spire 2 mod",
+  "description": "Slay the Spire 2 mod",
   "version": "v0.1.0",
   "min_game_version": "0.107.0",
   "has_pck": true,

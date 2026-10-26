@@ -59,9 +59,9 @@
 
     <!-- 에셋/도구 폴더는 C# 컴파일 대상에서 제외 -->
     <ItemGroup>
-        <Compile Remove="SpireMod/**;art/**;tools/**;dist/**" />
-        <EmbeddedResource Remove="SpireMod/**;art/**;tools/**;dist/**" />
-        <None Include="SpireMod.json" />
+        <Compile Remove="ModTemplate/**;art/**;build/**;dist/**" />
+        <EmbeddedResource Remove="ModTemplate/**;art/**;build/**;dist/**" />
+        <None Include="ModTemplate.json" />
     </ItemGroup>
 
     <!-- PC에 게임이 있으면 빌드 후 mods 폴더로 자동 복사 (CI에서는 건너뜀) -->

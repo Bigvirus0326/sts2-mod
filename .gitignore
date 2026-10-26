@@ -9,9 +9,11 @@ publish/
 .vs/
 local.props
 
-# art/ 에서 자동 생성되는 게임용 이미지 (원본은 art/ 에 커밋)
-SpireMod/images/
-SpireMod/mod_image.png
+build/
+
+# art/ 에서 자동 생성되는 게임용 이미지 (원본은 각 모드의 art/ 에 커밋)
+mods/*/*/images/
+mods/*/*/mod_image.png
 
 # 게임 원본 파일은 절대 올리지 않음 (저작권)
 sts2.dll
