@@ -10,6 +10,8 @@ GitHub가 자동으로 빌드해 설치 파일을 만들어 주는 모드 작업
 |---|---|
 | [SpireMod](mods/SpireMod) | 첫 모드 (빈 모드) |
 
+새 모드: `python3 tools/new_mod.py 이름` (또는 Claude에게 "새 모드 만들어줘")
+
 ## 어떻게 돌아가나
 ```
  폰/PC의 Claude ─(코드)─┐
