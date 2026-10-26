@@ -1,0 +1,18 @@
+; Godot 프로젝트 설정 — 모드의 .pck(그림 등 에셋 묶음)를 만들 때만 사용됩니다.
+; 게임이 Godot(MegaDot) 4.5.1을 쓰므로 더 높은 버전으로 저장하지 마세요.
+
+config_version=5
+
+[application]
+
+config/name="SpireMod"
+config/features=PackedStringArray("4.5", "C#", "Mobile")
+config/icon="res://SpireMod/mod_image.png"
+
+[dotnet]
+
+project/assembly_name="SpireMod"
+
+[rendering]
+
+renderer/rendering_method="mobile"

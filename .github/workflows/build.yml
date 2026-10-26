@@ -1,0 +1,89 @@
+name: Build mod
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MOD: SpireMod
+  GODOT_VERSION: 4.5.1-stable   # 게임(MegaDot)과 같은 버전이어야 .pck가 로드됨
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: 그림 변환 (art/ → SpireMod/images/)
+        run: |
+          pip install --quiet pillow
+          python3 tools/process_art.py --check
+          python3 tools/process_art.py
+
+      - name: C# 빌드 (.dll)
+        run: dotnet build ${{ env.MOD }}.csproj -c ExportRelease -o build
+
+      - name: Godot 준비
+        id: godot
+        run: |
+          set -e
+          dir="$RUNNER_TEMP/godot"
+          mkdir -p "$dir"
+          url="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -sSfL "$url" -o "$dir/godot.zip"
+          unzip -q "$dir/godot.zip" -d "$dir"
+          bin=$(find "$dir" -name 'Godot_v*_linux.x86_64' -type f | head -1)
+          chmod +x "$bin"
+          echo "bin=$bin" >> "$GITHUB_OUTPUT"
+
+      - name: 에셋 묶기 (.pck)
+        run: |
+          set -e
+          G="${{ steps.godot.outputs.bin }}"
+          "$G" --headless --path . --import || true
+          "$G" --headless --path . --export-pack BasicExport "build/${MOD}.pck"
+          test -s "build/${MOD}.pck"
+
+      - name: 설치용 폴더/zip 만들기
+        run: |
+          set -e
+          out="dist/${MOD}"
+          mkdir -p "$out"
+          cp "build/${MOD}.dll" "build/${MOD}.pck" "${MOD}.json" "$out/"
+          [ -f "build/${MOD}.pdb" ] && cp "build/${MOD}.pdb" "$out/" || true
+          (cd dist && zip -qr "${MOD}.zip" "${MOD}")
+          ls -la "$out"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.MOD }}
+          path: dist/${{ env.MOD }}/
+
+      - name: Releases의 'latest' 갱신 (main 푸시일 때)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          ver=$(python3 -c "import json;print(json.load(open('${MOD}.json'))['version'])")
+          notes="버전 ${ver} · 커밋 ${GITHUB_SHA::7} · $(date -u +'%Y-%m-%d %H:%M UTC')
+
+          설치: zip을 풀어 나온 ${MOD} 폴더를 'Slay the Spire 2/mods/' 에 넣으세요. (BaseLib 모드도 필요)
+          또는 PC에서 install.ps1 실행."
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create latest "dist/${MOD}.zip" --title "${MOD} ${ver} (최신 빌드)" --notes "$notes" --target "$GITHUB_SHA" --latest

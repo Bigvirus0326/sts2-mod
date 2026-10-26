@@ -1,0 +1,12 @@
+<Project>
+    <!-- 버전 고정은 여기 한 곳에서. 게임 업데이트로 모드가 깨지면 이 숫자부터 올려 보세요. -->
+    <PropertyGroup>
+        <!-- 게임 참조 스텁 버전 (nuget.org/packages/BSchneppe.Sts2.ReferenceAssemblies). '*-*'는 최신(베타 포함) -->
+        <Sts2RefVersion>*-*</Sts2RefVersion>
+        <!-- BaseLib 버전 (nuget.org/packages/Alchyr.Sts2.BaseLib) -->
+        <BaseLibVersion>3.*</BaseLibVersion>
+    </PropertyGroup>
+
+    <!-- PC에서 게임이 기본 경로가 아닌 곳에 있으면, 아래 파일을 만들어 Sts2DataDir를 지정하세요 (깃에는 안 올라감) -->
+    <Import Project="local.props" Condition="Exists('local.props')" />
+</Project>
