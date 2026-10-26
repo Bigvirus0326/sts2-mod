@@ -8,6 +8,7 @@ GitHub가 자동으로 빌드해 설치 파일을 만들어 주는 모드 작업
 
 | 모드 | 설명 |
 |---|---|
+| [MapleMonsters](mods/MapleMonsters) | 메이플스토리 몬스터 팬 모드 — 새 막 "메이플 월드" + 보스 (머쉬맘·좀비머쉬맘·발록) |
 | [SpireMod](mods/SpireMod) | 첫 모드 (빈 모드) |
 
 새 모드: `python3 tools/new_mod.py 이름` (또는 Claude에게 "새 모드 만들어줘")

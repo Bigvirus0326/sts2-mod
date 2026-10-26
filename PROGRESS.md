@@ -5,24 +5,36 @@
 
 ## 지금 상태 (항상 최신으로 덮어쓰기)
 - 마지막 갱신: 2026-10-26 (Claude)
-- 빌드: ✅ 통과 — 클라우드 자동 빌드 정상, `SpireMod-latest` 릴리스 있음
-- 실제 게임에서 로딩 확인: ❓ 아직 안 함 (사용자 PC에서 확인 필요)
+- 빌드: ✅ 두 모드 모두 클라우드 빌드 통과 (`MapleMonsters-latest`, `SpireMod-latest`)
+- 실제 게임에서 로딩/플레이 확인: ❓ 아직 안 함 (사용자 PC에서 확인 필요)
 
 | 모드 | 버전 | 상태 | 내용 |
 |---|---|---|---|
-| SpireMod | v0.1.0 | 빈 모드 | 로딩 시 로그만 출력. 이름은 임시(바꿔도 됨) |
+| MapleMonsters | v0.1.0 | 1차 구현 | 새 막 "메이플 월드"(1막 대체, 랜덤 등장) + 보스 3종: 머쉬맘·좀비머쉬맘·발록. 일반/엘리트·지도·배경·음악은 기본 1막(Overgrowth) 임시 차용. 몬스터 그림은 임시(PLACEHOLDER) |
+| SpireMod | v0.1.0 | 빈 모드 | 로딩 시 로그만 출력. 이름은 임시 |
+
+### MapleMonsters 구조 메모
+- `Code/Monsters/MapleMonster.cs`: 공통 기반 (이미지 한 장 = 몬스터 모습, Hit/BuffSelf/DebuffTargets/Block/HealSelf/Cycle 도우미)
+- `Code/Encounters/MapleBossEncounter.cs`: 보스 전투. 새 보스 = `public sealed class XxxBoss : MapleBossEncounter<Xxx>;` 한 줄
+- `Code/Acts/MapleWorldAct.cs`: 막 정의. 임시 차용 부분은 `Borrowed`(Overgrowth)
+- 보스 지도 아이콘: 임시로 기본 게임 VantomBoss 것 차용 (TODO)
+- 텍스트 키 형식: `MAPLEMONSTERS-<CLASS_SNAKE>.name`, `.moves.<MOVE_ID>`, 막은 `MAPLE_WORLD_ACT.title`, 전투는 `<X>_BOSS.title/.loss`
 
 ## 다음에 할 일
-- [ ] 사용자 PC에서 BaseLib + SpireMod 설치 후 모드 목록에 뜨는지 확인
-- [ ] 첫 콘텐츠(카드 또는 유물) 정하기
-- [ ] (선택) SpireMod 이름 바꾸기
+- [ ] 사용자 PC에서 MapleMonsters 설치 → 메이플 월드가 1막으로 뜨는지, 보스전이 정상인지 확인 (막이 랜덤이라 몇 판 걸릴 수 있음)
+- [ ] GPT로 보스 그림 3장 교체: `mods/MapleMonsters/art/monsters/{mushmom,zombie_mushmom,balrog}.png`
+- [ ] 메이플 엘리트·일반 몹 추가 → 빌려 쓰는 Overgrowth 전투 줄이기
+- [ ] 전용 보스 지도 아이콘, 지도/전투 배경, (가능하면) 머쉬맘 소환 패턴
+- [ ] 테스트 편의: 메이플 월드가 항상 1막으로 나오게 하는 설정(선택)
 
 ## 정해진 것 (바꾸려면 사용자와 상의)
 - 역할: Claude = 코드·기획, GPT = 그림 (`mods/<모드>/art/` 규칙은 AGENTS.md)
 - 한 저장소에 모드 여러 개(`mods/<이름>/`), 바뀐 모드만 빌드, 모드별 `<이름>-latest` 릴리스
 - 빌드는 GitHub Actions에서만 (게임 DLL 대신 NuGet 참조 스텁). 게임 파일 커밋 금지
 - 사용자는 주로 폰으로 작업 → 한국어로 짧게, 결과 위주로 보고
+- MapleMonsters: 메이플 전용 막(Act) 방식, 보스부터 제작. 넥슨 IP 팬 모드 → 공개 배포(창작마당) 시 내려갈 수 있음을 사용자에게 안내함
 
 ## 기록 (최신이 위)
+- 2026-10-26 — MapleMonsters 모드 추가: 메이플 월드 막 + 보스 3종, 몬스터 그림 파이프라인(art/monsters), localization이 .pck에 빠지던 문제 수정, 게임 API 목록(dev-api) 워크플로
 - 2026-10-26 — 여러 모드 구조로 전환, 바뀐 모드만 빌드. art/ 그림이 .gitignore에 걸리던 버그 수정
 - 2026-10-26 — 저장소 초기 세팅: 빈 모드 SpireMod, 클라우드 빌드(.dll + .pck), 그림 자동 변환, install.ps1

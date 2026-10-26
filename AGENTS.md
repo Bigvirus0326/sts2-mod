@@ -50,6 +50,7 @@ python3 tools/new_mod.py FireCards --description "불꽃 카드 모음"
 | `art/relics/<id>.png` | 유물 아이콘 | 정사각형, **투명 배경** | 256² / 94² + 흰 테두리(outline) 자동 생성 |
 | `art/powers/<id>.png` | 버프·디버프 아이콘 | 정사각형, **투명 배경** | 256² / 64² |
 | `art/potions/<id>.png` | 포션 | **투명 배경** | 최대 256 |
+| `art/monsters/<id>.png` | 몬스터(적) 전신 | **투명 배경**, 세로로 넉넉히 (예: 1024×1024) | **왼쪽(플레이어 쪽)을 바라보게**. 화면 높이는 `art/monsters/sizes.json`에서 px로 지정(기본 300, 보스 380~450) |
 | `art/other/` | 그 밖의 그림 | 아무거나 | 그대로 복사 |
 
 - **파일 이름 = 코드의 id.** 영어 소문자+밑줄(snake_case) 권장: `fire_strike.png`. (대문자·공백은 자동 변환되지만 헷갈리니 피하기)
@@ -66,8 +67,14 @@ python3 tools/new_mod.py FireCards --description "불꽃 카드 모음"
 - 참고 자료: [모드 템플릿 위키](https://github.com/Alchyr/ModTemplate-StS2/wiki), [BaseLib 위키](https://alchyr.github.io/BaseLib-Wiki/), 슬더스 디스코드 #sts2-modding
 - 기능을 바꾸면 그 모드 `<모드>.json`의 `version`을 올리기 (v0.1.0 → v0.1.1).
 
+## 게임 API 찾기 (게임·NuGet 없이)
+Releases의 [`dev-api`](../../releases/tag/dev-api)에 `sts2-api.zip`이 있습니다 (게임 참조 스텁 + BaseLib 디컴파일, 시그니처만).
+`curl -sSfL https://github.com/Bigvirus0326/sts2-mod/releases/download/dev-api/sts2-api.zip -o api.zip` 로 받아 grep하세요.
+`Directory.Build.props`가 바뀌면 자동 갱신됩니다. 구현 예시가 필요하면 오픈소스 모드 [ActsFromThePast](https://github.com/Cany0udance/ActsFromThePast)(막·몬스터·전투)를 참고.
+
 ## 빌드가 깨졌을 때
 - 게임 업데이트로 API가 바뀐 경우가 많음 → `Directory.Build.props`의 스텁/BaseLib 버전 확인.
 - 그림 이름 충돌 → Actions 로그의 "문제:" 줄 확인.
+- 컴파일 오류는 실행 결과의 주석(annotation)에 표시됨: `https://api.github.com/repos/Bigvirus0326/sts2-mod/check-runs/<job id>/annotations` (권한 없이 읽힘)
 - 특정 모드만 다시 빌드: Actions → Build mods → Run workflow → 모드 이름 입력.
 - 로컬 확인(선택): `python3 tools/process_art.py mods/<모드> && dotnet build mods/<모드>/<모드>.csproj -c ExportRelease`
