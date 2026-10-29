@@ -12,7 +12,7 @@ namespace MapleMonsters.Code.Acts;
 
 /// <summary>
 /// 메이플 월드의 법칙 — 메이플 월드 막의 모든 전투가 시작될 때, 모든 적(빌려 온 기본 몬스터 포함)에게
-/// 몬스터 레벨(체력 증가) · 데미지 상한 · 제한 시간을 붙입니다. 숫자는 MapleDifficulty에서 조절.
+/// 몬스터 레벨(체력 증가) · 넉백 · 데미지 상한 · 제한 시간을 붙입니다. 숫자는 MapleDifficulty에서 조절.
 /// </summary>
 [HarmonyPatch(typeof(Hook), nameof(Hook.BeforeCombatStart))]
 public static class MapleWorldRules
@@ -30,18 +30,18 @@ public static class MapleWorldRules
             return;
 
         var roomType = combatState.Encounter?.RoomType ?? RoomType.Monster;
-        var (hpBonus, cap, timeLimit) = roomType switch
+        var (hpBonus, knockback, cap, timeLimit) = roomType switch
         {
-            RoomType.Boss => (MapleDifficulty.BossHpBonusPercent, MapleDifficulty.BossDamageCap, MapleDifficulty.BossTimeLimitTurns),
-            RoomType.Elite => (MapleDifficulty.EliteHpBonusPercent, MapleDifficulty.EliteDamageCap, MapleDifficulty.EliteTimeLimitTurns),
-            _ => (MapleDifficulty.NormalHpBonusPercent, MapleDifficulty.NormalDamageCap, MapleDifficulty.NormalTimeLimitTurns),
+            RoomType.Boss => (MapleDifficulty.BossHpBonusPercent, MapleDifficulty.BossKnockbackDamage, MapleDifficulty.BossDamageCap, MapleDifficulty.BossTimeLimitTurns),
+            RoomType.Elite => (MapleDifficulty.EliteHpBonusPercent, MapleDifficulty.EliteKnockbackDamage, MapleDifficulty.EliteDamageCap, MapleDifficulty.EliteTimeLimitTurns),
+            _ => (MapleDifficulty.NormalHpBonusPercent, MapleDifficulty.NormalKnockbackDamage, MapleDifficulty.NormalDamageCap, MapleDifficulty.NormalTimeLimitTurns),
         };
 
         foreach (var enemy in combatState.Enemies.ToList())
         {
             try
             {
-                await Apply(enemy, hpBonus, cap, timeLimit);
+                await Apply(enemy, hpBonus, knockback, cap, timeLimit);
             }
             catch (Exception e)
             {
@@ -50,7 +50,7 @@ public static class MapleWorldRules
         }
     }
 
-    private static async Task Apply(Creature enemy, int hpBonusPercent, int cap, int timeLimit)
+    private static async Task Apply(Creature enemy, int hpBonusPercent, int knockback, int cap, int timeLimit)
     {
         if (enemy.CurrentHp <= 0)
             return;
@@ -62,6 +62,8 @@ public static class MapleWorldRules
         }
 
         var ctx = new ThrowingPlayerChoiceContext();
+        if (knockback > 0)
+            await PowerCmd.Apply<KnockbackPower>(ctx, enemy, knockback, enemy, null);
         if (cap > 0)
             await PowerCmd.Apply<DamageCapPower>(ctx, enemy, cap, enemy, null);
         if (timeLimit > 0)

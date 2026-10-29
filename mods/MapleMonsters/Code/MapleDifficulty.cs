@@ -22,6 +22,12 @@ public static class MapleDifficulty
     public const int BossTimeLimitTurns = 8;
     public const int TimeLimitStrengthPerTurn = 3;
 
+    // ── 넉백: 막히지 않은 피해를 한 번에 이만큼 이상 받으면 손패 카드가 날아감 (0 = 없음) ──
+    public const int NormalKnockbackDamage = 12;
+    public const int EliteKnockbackDamage = 10;
+    public const int BossKnockbackDamage = 10;
+    public const int KnockbackCards = 1;   // 날아가는 카드 수
+
     // ── 보스 2페이즈: 체력이 이 비율(%) 이하가 되면 전환 ──
     public const int Phase2HpPercent = 50;
 
